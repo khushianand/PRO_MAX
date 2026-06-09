@@ -6,7 +6,7 @@ from typing import Optional
 
 import pandas as pd
 
-from tabs.generate_tracking.parser import TEMPLATE_COLUMNS, highest_risk, merge_semicolon
+from tabs.generate_tracking.parser import TEMPLATE_COLUMNS, highest_risk, split_values
 
 _KEY_ALIASES = {
     "Name": ("Name", "Title", "Vulnerability", "Plugin Name"),
@@ -42,6 +42,18 @@ def _comparison_key(df: pd.DataFrame) -> pd.Series:
     return key_parts.agg("|".join, axis=1)
 
 
+def merge_comma(values) -> str:
+    """Merge repeated values into comma-separated, de-duplicated text."""
+    merged = []
+
+    for value in values:
+        for token in split_values(value):
+            if token not in merged:
+                merged.append(token)
+
+    return ", ".join(merged)
+
+
 def classify_new_old(raw_df: pd.DataFrame, master_df: Optional[pd.DataFrame]) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Split raw rows into New vs Old using tab-local Name+Host+Port+CVE logic.
 
@@ -59,7 +71,7 @@ def classify_new_old(raw_df: pd.DataFrame, master_df: Optional[pd.DataFrame]) ->
 
 
 def aggregate_unique(df: pd.DataFrame) -> pd.DataFrame:
-    """Group by Name/CVE/Host and merge all other fields with '; ' de-dup logic."""
+    """Group by Name/CVE/Host and merge other fields with comma de-dup logic."""
     if df.empty:
         return pd.DataFrame(columns=TEMPLATE_COLUMNS)
 
@@ -70,7 +82,7 @@ def aggregate_unique(df: pd.DataFrame) -> pd.DataFrame:
             if col == "Risk":
                 row[col] = highest_risk(group[col].tolist())
             else:
-                row[col] = merge_semicolon(group[col].tolist())
+                row[col] = merge_comma(group[col].tolist())
         grouped_rows.append(row)
 
     return pd.DataFrame(grouped_rows, columns=TEMPLATE_COLUMNS)

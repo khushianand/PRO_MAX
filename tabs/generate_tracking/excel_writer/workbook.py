@@ -14,7 +14,6 @@ from tabs.generate_tracking.excel_writer.sheets import (
     write_main_sheet,
     write_summary_sheet,
 )
-from tabs.generate_tracking.excel_writer.three_uk_qualys import THREE_UK_QUALYS_TOTAL_COLUMNS, is_three_uk_qualys_project
 
 TOTAL_VULNERABILITIES_SHEET_NAME = "Total Vulnerabilities"
 NEW_VULNERABILITIES_SHEET_NAME = "New Vulnerabilities"
@@ -166,23 +165,7 @@ def _write_dataframe_sheet(
 
 
 def _write_tracking_sheet(ws, df: pd.DataFrame, project: str, scanner: str, *, sheet_kind: str):
-    if sheet_kind == "total" and is_three_uk_qualys_project(project, scanner):
-        total_df = (
-            _coerce_dataframe(df)
-            .reindex(
-                columns=THREE_UK_QUALYS_TOTAL_COLUMNS,
-                fill_value="",
-            )
-        )
-        _write_dataframe_sheet(
-            ws,
-            total_df,
-            project,
-            scanner,
-            blue_headers=QUALYS_BLUE_HEADERS,
-        )
-        return
-
+    """Write Total/New/Old/Unique Generate Tracking sheets in template layout."""
     write_main_sheet(ws, _coerce_dataframe(df), project, scanner=scanner)
 
 

@@ -134,9 +134,10 @@ Processing:
 
 Important output rule:
 
-- `new_df` is written to the sheet named **Total Vulnerabilities**.
-- `old_df` is written to the **Old Vulnerabilities** sheet.
-- `unique_df` is written to the **Unique Vulnerabilities** sheet.
+- `total_df` / all parsed raw findings are written to **Total Vulnerabilities**.
+- `new_df` / raw findings not matched in the master tracking sheet are written to **New Vulnerabilities**.
+- `old_df` / raw findings matched in the master tracking sheet are written to **Old Vulnerabilities**.
+- `unique_df` / aggregated total findings are written to **Unique Vulnerabilities**.
 
 ### 3. Add VAMS Data
 
@@ -289,11 +290,12 @@ Typical generated workbooks include:
 
 - `Dashboard`
 - `Total Vulnerabilities`
-- `Old Vulnerabilities` for Generate Tracking when applicable
+- `New Vulnerabilities`
+- `Old Vulnerabilities`
 - `Unique Vulnerabilities`
 - `Disposition`
 
-3UK + Qualys outputs use a special local mapping/layout while still fitting the same workflow purpose.
+Generate Tracking writes Total/New/Old/Unique sheets in the template vulnerability columns.
 
 ---
 

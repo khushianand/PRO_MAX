@@ -210,12 +210,14 @@ class GenerateTrackingTab(ctk.CTkFrame):
                 and self.state["selected_scanner"].strip().casefold() == "qualys"
             ):
 
+                total_df = build_3uk_qualys_template_sheet_df(raw_df)
                 new_df = build_3uk_qualys_template_sheet_df(new_df)
                 old_df = build_3uk_qualys_template_sheet_df(old_df)
                 unique_df = build_3uk_qualys_unique_sheet_df(raw_df)
 
             else:
 
+                total_df = raw_df
                 unique_df = aggregate_unique(raw_df)
 
             hooks.get("update_metrics", lambda **_: None)(
@@ -236,7 +238,7 @@ class GenerateTrackingTab(ctk.CTkFrame):
                 unique_df,
                 self.state["selected_project"],
                 self.state["selected_scanner"],
-                total_df=raw_df,
+                total_df=total_df,
             )
 
             # -------------------------------------------------

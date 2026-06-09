@@ -356,9 +356,9 @@ def three_uk_qualys_total_view(
 
     # =====================================================
     # FINAL ORDER
-    # 3UK + Qualys Total Vulnerabilities must remain exactly
-    # the raw Qualys total-column layout. VAMS fields are
-    # preserved on the template-based New/Old/Unique sheets.
+    # Parsed 3UK + Qualys raw data stays in Qualys total-column
+    # layout for comparison and mapping. Generate Tracking output
+    # sheets map this data into template columns before writing.
     # =====================================================
 
     out = out[
@@ -558,10 +558,10 @@ def build_3uk_qualys_unique_sheet_df(
     }
 
     # =====================================================
-    # SEMICOLON MERGE
+    # COMMA MERGE
     # =====================================================
 
-    def merge_semicolon_separated(
+    def merge_comma_separated(
         series
     ):
 
@@ -578,7 +578,8 @@ def build_3uk_qualys_unique_sheet_df(
 
                 v.strip()
 
-                for v in item.split(";")
+                for chunk in item.split(";")
+                for v in chunk.split(",")
             ]
 
             for value in split_values:
@@ -590,7 +591,7 @@ def build_3uk_qualys_unique_sheet_df(
 
                     values.append(value)
 
-        return "; ".join(values)
+        return ", ".join(values)
 
     # =====================================================
     # AGGREGATION
@@ -644,7 +645,7 @@ def build_3uk_qualys_unique_sheet_df(
         else:
 
             aggregation[col] = (
-                merge_semicolon_separated
+                merge_comma_separated
             )
 
     # =====================================================
