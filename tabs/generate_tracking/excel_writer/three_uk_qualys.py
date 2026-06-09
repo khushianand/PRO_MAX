@@ -414,9 +414,11 @@ def build_3uk_vams_matching_df(
     return out.fillna("")
 
 
-def build_3uk_qualys_unique_sheet_df(
+def build_3uk_qualys_template_sheet_df(
     total_df: pd.DataFrame,
 ) -> pd.DataFrame:
+
+    """Map 3UK Qualys Total rows into the universal tracking template columns."""
 
     column_mapping = {
 
@@ -463,7 +465,9 @@ def build_3uk_qualys_unique_sheet_df(
             "CVSS3 Base",
     }
 
-    out = pd.DataFrame()
+    out = pd.DataFrame(
+        index=total_df.index
+    )
 
     for target_col, source_col in (
         column_mapping.items()
@@ -484,10 +488,9 @@ def build_3uk_qualys_unique_sheet_df(
         )
 
     # =====================================================
-    # ENSURE ALL UNIQUE COLUMNS
+    # ENSURE ALL UNIVERSAL TEMPLATE COLUMNS
     # =====================================================
 
-    
     for col in (
         THREE_UK_QUALYS_UNIQUE_COLUMNS
     ):
@@ -500,7 +503,18 @@ def build_3uk_qualys_unique_sheet_df(
         THREE_UK_QUALYS_UNIQUE_COLUMNS
     ].fillna("")
 
-    out = out.astype(str)
+    return out.astype(str).reset_index(
+        drop=True
+    )
+
+
+def build_3uk_qualys_unique_sheet_df(
+    total_df: pd.DataFrame,
+) -> pd.DataFrame:
+
+    out = build_3uk_qualys_template_sheet_df(
+        total_df
+    )
 
     priority = {
         
@@ -570,13 +584,13 @@ def build_3uk_qualys_unique_sheet_df(
 
         if col in primary_match_columns:
 
-            aggregation[col] = "first"
+            continue
 
         # -------------------------------------------------
         # RISK PRIORITY
         # -------------------------------------------------
 
-        elif col == "Risk":
+        if col == "Risk":
 
             aggregation[col] = (
                 lambda s: max(
@@ -624,5 +638,8 @@ def build_3uk_qualys_unique_sheet_df(
 
         .agg(aggregation)
 
-        .reset_index(drop=True)
+        .reset_index()
+        .reindex(
+            columns=THREE_UK_QUALYS_UNIQUE_COLUMNS
+        )
     )
