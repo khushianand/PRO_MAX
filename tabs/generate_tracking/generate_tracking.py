@@ -1,7 +1,6 @@
 """Tab 2: Update tracking sheet using optional master input."""
 
 import customtkinter as ctk
-from tkinter import filedialog, messagebox
 
 from tabs.generate_tracking.logic import aggregate_unique, classify_new_old
 from tabs.generate_tracking.excel_writer import write_output
@@ -12,6 +11,7 @@ from tabs.generate_tracking.excel_writer import (
     build_3uk_qualys_unique_sheet_df,
 )
 from utils.file_handler import list_excel_sheets, validate_file
+from gui.qt_dialogs import DialogService
 
 
 class GenerateTrackingTab(ctk.CTkFrame):
@@ -27,7 +27,7 @@ class GenerateTrackingTab(ctk.CTkFrame):
         self.raw_sheet = ctk.StringVar()
         self.output_file = ctk.StringVar()
         self._entry_widgets = []
-
+        self.dialogs = DialogService()
 
         self._build_ui()
         self._bind_validation()
@@ -36,15 +36,17 @@ class GenerateTrackingTab(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.master_combo = ctk.CTkComboBox(self, values=[""], variable=self.master_sheet)
         self.raw_combo = ctk.CTkComboBox(self, values=[""], variable=self.raw_sheet)
-        self._file_row(0, "📂 Master File (optional)", self.master_file, self._browse_master)
-        self.master_combo.grid(row=1, column=0, sticky="w", padx=12, pady=(0,8))
-        self._file_row(2, "📊 Raw File", self.raw_file, self._browse_raw)
-        self.raw_combo.grid(row=3, column=0, sticky="w", padx=12, pady=(0,8))
-        self._file_row(4, "📄 Output File", self.output_file, self._browse_output)
+        backend_text = f"Dialog backend: {self.dialogs.backend_name} (PySide/PyQt when available)"
+        ctk.CTkLabel(self, text=backend_text, text_color="#60a5fa").grid(row=0, column=0, sticky="w", padx=12, pady=(4, 0))
+        self._file_row(1, "📂 Master File (optional)", self.master_file, self._browse_master)
+        self.master_combo.grid(row=2, column=0, sticky="w", padx=12, pady=(0,8))
+        self._file_row(3, "📊 Raw File", self.raw_file, self._browse_raw)
+        self.raw_combo.grid(row=4, column=0, sticky="w", padx=12, pady=(0,8))
+        self._file_row(5, "📄 Output File", self.output_file, self._browse_output)
         self.run_btn = ctk.CTkButton(self, text="▶ Run Assessment", command=self.run)
-        self.run_btn.grid(row=5, column=0, sticky="e", padx=12, pady=10)
+        self.run_btn.grid(row=6, column=0, sticky="e", padx=12, pady=10)
         self.form_status = ctk.CTkLabel(self, text="Fill required fields to enable Run", text_color="#f59e0b")
-        self.form_status.grid(row=5, column=0, sticky="w", padx=12, pady=10)
+        self.form_status.grid(row=6, column=0, sticky="w", padx=12, pady=10)
         self.run_btn.configure(state="disabled")
 
     def _file_row(self, row, label, var, browse_command, save=False):
@@ -84,19 +86,19 @@ class GenerateTrackingTab(ctk.CTkFrame):
             var.set(sheets[0])
 
     def _browse_master(self):
-        path = filedialog.askopenfilename(filetypes=[("Excel", "*.xlsx *.xls *.xlsm")])
+        path = self.dialogs.open_excel_file()
         if path:
             self.master_file.set(path)
             self._load_sheets(path, self.master_combo, self.master_sheet)
 
     def _browse_raw(self):
-        path = filedialog.askopenfilename(filetypes=[("Excel", "*.xlsx *.xls *.xlsm")])
+        path = self.dialogs.open_excel_file()
         if path:
             self.raw_file.set(path)
             self._load_sheets(path, self.raw_combo, self.raw_sheet)
 
     def _browse_output(self):
-        path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel", "*.xlsx")])
+        path = self.dialogs.save_excel_file()
         if path:
             self.output_file.set(path)
 
@@ -231,8 +233,8 @@ class GenerateTrackingTab(ctk.CTkFrame):
                 old_df,
                 unique_df,
                 self.state["selected_project"],
-
                 self.state["selected_scanner"],
+                total_df=raw_df,
             )
     
             # -------------------------------------------------
@@ -248,8 +250,8 @@ class GenerateTrackingTab(ctk.CTkFrame):
             bordered_sheets = {
                 "Total Vulnerabilities",
                 "Unique Vulnerabilities",
-                "New Data",
-                "Old Data",
+                "New Vulnerabilities",
+                "Old Vulnerabilities",
                 "Total Data",
                 "Unique Data",
             }
@@ -273,7 +275,7 @@ class GenerateTrackingTab(ctk.CTkFrame):
             )
     
             self.state["last_output_file"] = output
-            messagebox.showinfo(
+            self.dialogs.show_info(
                 "Success",
                 f"Tracking sheet created:\n{output}",
             )
@@ -285,7 +287,7 @@ class GenerateTrackingTab(ctk.CTkFrame):
                 "Update Tracking Sheet failed"
             )
     
-            messagebox.showerror(
+            self.dialogs.show_error(
                 "Error",
                 str(exc),
             )
