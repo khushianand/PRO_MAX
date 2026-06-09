@@ -98,6 +98,20 @@ THREE_UK_QUALYS_UNIQUE_COLUMNS = [
 # REQUIRED RAW QUALYS HEADERS
 # =========================================================
 
+VAMS_FIELD_COLUMNS = [
+
+    "CVSS v3.0 Temporal Score",
+    "Release Remediation Plan",
+    "Release Remediation Date",
+    "Expert Severity",
+    "Expert Score",
+    "Remediation Reference ID",
+    "Disposition",
+    "VAMS (PSL comments)",
+    "MSS Comments",
+]
+
+
 QUALYS_REQUIRED_HEADERS = [
 
     "IP",
@@ -342,6 +356,9 @@ def three_uk_qualys_total_view(
 
     # =====================================================
     # FINAL ORDER
+    # 3UK + Qualys Total Vulnerabilities must remain exactly
+    # the raw Qualys total-column layout. VAMS fields are
+    # preserved on the template-based New/Old/Unique sheets.
     # =====================================================
 
     out = out[
@@ -414,9 +431,11 @@ def build_3uk_vams_matching_df(
     return out.fillna("")
 
 
-def build_3uk_qualys_unique_sheet_df(
+def build_3uk_qualys_template_sheet_df(
     total_df: pd.DataFrame,
 ) -> pd.DataFrame:
+
+    """Map 3UK Qualys Total rows into the universal tracking template columns."""
 
     column_mapping = {
 
@@ -463,7 +482,9 @@ def build_3uk_qualys_unique_sheet_df(
             "CVSS3 Base",
     }
 
-    out = pd.DataFrame()
+    out = pd.DataFrame(
+        index=total_df.index
+    )
 
     for target_col, source_col in (
         column_mapping.items()
@@ -484,10 +505,25 @@ def build_3uk_qualys_unique_sheet_df(
         )
 
     # =====================================================
-    # ENSURE ALL UNIQUE COLUMNS
+    # PRESERVE VAMS COLUMNS WHEN PRESENT
     # =====================================================
 
-    
+    for col in VAMS_FIELD_COLUMNS:
+
+        if col in total_df.columns:
+
+            out[col] = (
+
+                total_df[col]
+                .fillna("")
+                .astype(str)
+                .str.strip()
+            )
+
+    # =====================================================
+    # ENSURE ALL UNIVERSAL TEMPLATE COLUMNS
+    # =====================================================
+
     for col in (
         THREE_UK_QUALYS_UNIQUE_COLUMNS
     ):
@@ -500,7 +536,18 @@ def build_3uk_qualys_unique_sheet_df(
         THREE_UK_QUALYS_UNIQUE_COLUMNS
     ].fillna("")
 
-    out = out.astype(str)
+    return out.astype(str).reset_index(
+        drop=True
+    )
+
+
+def build_3uk_qualys_unique_sheet_df(
+    total_df: pd.DataFrame,
+) -> pd.DataFrame:
+
+    out = build_3uk_qualys_template_sheet_df(
+        total_df
+    )
 
     priority = {
         
@@ -570,13 +617,13 @@ def build_3uk_qualys_unique_sheet_df(
 
         if col in primary_match_columns:
 
-            aggregation[col] = "first"
+            continue
 
         # -------------------------------------------------
         # RISK PRIORITY
         # -------------------------------------------------
 
-        elif col == "Risk":
+        if col == "Risk":
 
             aggregation[col] = (
                 lambda s: max(
@@ -624,5 +671,8 @@ def build_3uk_qualys_unique_sheet_df(
 
         .agg(aggregation)
 
-        .reset_index(drop=True)
+        .reset_index()
+        .reindex(
+            columns=THREE_UK_QUALYS_UNIQUE_COLUMNS
+        )
     )

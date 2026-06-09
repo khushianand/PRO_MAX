@@ -12,7 +12,7 @@ The application can:
 
 - Parse scanner/VAMS Excel files into standard vulnerability columns.
 - Build new vulnerability reports from raw scanner data.
-- Generate tracking workbooks by comparing raw findings against an optional master workbook.
+- Generate tracking workbooks by comparing raw findings against a required master workbook.
 - Add VAMS remediation fields into an existing generated workbook.
 - Create/refresh Excel Dashboard charts and supporting sheets.
 - Show live GUI metrics, logs, processing progress, and output summary access.
@@ -115,11 +115,11 @@ Special handling: 3UK + Qualys uses tab-local special builders in `tabs/make_new
 
 Package: `tabs/generate_tracking/`
 
-Purpose: compare current raw scanner data against an optional master workbook and produce tracking output.
+Purpose: compare current raw scanner data against a required master workbook and produce tracking output.
 
 Inputs:
 
-- Optional master Excel file and sheet.
+- Required master Excel file and sheet.
 - Raw scanner Excel file and sheet.
 - Output `.xlsx` path.
 
@@ -127,7 +127,7 @@ Processing:
 
 1. Validate selected files/sheets.
 2. Parse raw data.
-3. Parse master data if supplied.
+3. Parse required master data.
 4. Classify rows into new and old findings with the tab-local comparison logic.
 5. Aggregate unique findings.
 6. Write the output workbook.

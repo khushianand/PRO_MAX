@@ -476,7 +476,7 @@ MakeNewReportTab.run
 GenerateTrackingTab.run
   → validate inputs
   → parse raw data
-  → parse optional master data
+  → parse required master data
   → classify_new_old
   → aggregate_unique
   → write_output(new_df, old_df, unique_df)

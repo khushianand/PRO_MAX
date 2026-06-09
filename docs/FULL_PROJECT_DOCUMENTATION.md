@@ -222,7 +222,7 @@ Update state/logs/metrics
 
 Folder: `tabs/generate_tracking/`
 
-Purpose: compare raw scanner findings with an optional master workbook and generate tracking output.
+Purpose: compare raw scanner findings with a required master workbook and generate tracking output.
 
 ### Files
 
@@ -242,7 +242,7 @@ Purpose: compare raw scanner findings with an optional master workbook and gener
 ### Run sequence
 
 ```text
-User selects raw file/sheet/output path and optional master file/sheet
+User selects raw file/sheet/output path and required master file/sheet
   ↓
 Validate inputs
   ↓
