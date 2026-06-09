@@ -7,6 +7,7 @@ from tabs.generate_tracking.excel_writer import write_output
 from tabs.generate_tracking.excel_writer.formatting import apply_table_formatting
 from tabs.generate_tracking.parser import parse_scan_file
 from tabs.generate_tracking.excel_writer import (
+    build_3uk_qualys_template_sheet_df,
     build_3uk_qualys_total_sheet_df,
     build_3uk_qualys_unique_sheet_df,
 )
@@ -210,6 +211,8 @@ class GenerateTrackingTab(ctk.CTkFrame):
                 and self.state["selected_scanner"].strip().casefold() == "qualys"
             ):
             
+                new_df = build_3uk_qualys_template_sheet_df(new_df)
+                old_df = build_3uk_qualys_template_sheet_df(old_df)
                 unique_df = build_3uk_qualys_unique_sheet_df(raw_df)
             
             else:

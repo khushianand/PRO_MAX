@@ -14,7 +14,7 @@ from tabs.generate_tracking.excel_writer.sheets import (
     write_main_sheet,
     write_summary_sheet,
 )
-from tabs.generate_tracking.excel_writer.three_uk_qualys import VAMS_FIELD_COLUMNS, is_three_uk_qualys_project
+from tabs.generate_tracking.excel_writer.three_uk_qualys import THREE_UK_QUALYS_TOTAL_COLUMNS, is_three_uk_qualys_project
 
 TOTAL_VULNERABILITIES_SHEET_NAME = "Total Vulnerabilities"
 NEW_VULNERABILITIES_SHEET_NAME = "New Vulnerabilities"
@@ -166,17 +166,20 @@ def _write_dataframe_sheet(
 
 
 def _write_tracking_sheet(ws, df: pd.DataFrame, project: str, scanner: str, *, sheet_kind: str):
-    if is_three_uk_qualys_project(project, scanner):
-        if sheet_kind == "unique":
-            _write_dataframe_sheet(ws, df, project, scanner, blue_from_column=14)
-        else:
-            _write_dataframe_sheet(
-                ws,
-                df,
-                project,
-                scanner,
-                blue_headers=QUALYS_BLUE_HEADERS.union(VAMS_FIELD_COLUMNS),
-            )
+    if sheet_kind == "total" and is_three_uk_qualys_project(project, scanner):
+        total_df = _coerce_dataframe(df)
+        total_columns = [
+            column
+            for column in THREE_UK_QUALYS_TOTAL_COLUMNS
+            if column in total_df.columns
+        ]
+        _write_dataframe_sheet(
+            ws,
+            total_df[total_columns],
+            project,
+            scanner,
+            blue_headers=QUALYS_BLUE_HEADERS,
+        )
         return
 
     write_main_sheet(ws, _coerce_dataframe(df), project, scanner=scanner)
