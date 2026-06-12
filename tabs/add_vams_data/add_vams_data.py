@@ -3,7 +3,6 @@
 import customtkinter as ctk
 import pandas as pd
 
-from tkinter import filedialog, messagebox
 
 from openpyxl import (
     load_workbook,
@@ -29,6 +28,7 @@ from tabs.add_vams_data.excel_writer.formatting import apply_table_formatting
 
 from utils.file_handler import list_excel_sheets, validate_file
 from utils.memory import memory_session, release_large_objects
+from gui.qt_dialogs import DialogService
 
 
 class AddVamsDataTab(ctk.CTkFrame):
@@ -52,21 +52,25 @@ class AddVamsDataTab(ctk.CTkFrame):
 
         self.raw_sheet = ctk.StringVar()
 
+        self.dialogs = DialogService()
+
         self._build()
         self._bind_validation()
 
 
     def _build(self):
         self.grid_columnconfigure(0, weight=1)
-        self._file_row(0, "📄 Output file", self.output_file, self._browse_output)
-        self._file_row(1, "📊 Raw VAMS file", self.raw_file, self._browse_raw)
+        backend_text = f"Dialog backend: {self.dialogs.backend_name} (PySide/PyQt when available)"
+        ctk.CTkLabel(self, text=backend_text, text_color="#60a5fa").grid(row=0, column=0, sticky="w", padx=12, pady=(4, 0))
+        self._file_row(1, "📄 Output file", self.output_file, self._browse_output)
+        self._file_row(2, "📊 Raw VAMS file", self.raw_file, self._browse_raw)
         sheet_card = ctk.CTkFrame(self, corner_radius=12)
-        sheet_card.grid(row=2, column=0, sticky="ew", padx=10, pady=8)
+        sheet_card.grid(row=3, column=0, sticky="ew", padx=10, pady=8)
         ctk.CTkLabel(sheet_card, text="🧾 Raw VAMS sheet").grid(row=0, column=0, sticky="w", padx=12, pady=(8,4))
         self.raw_sheet_combo = ctk.CTkComboBox(sheet_card, values=[""], variable=self.raw_sheet)
         self.raw_sheet_combo.grid(row=1, column=0, sticky="w", padx=12, pady=(0,8))
         self.run_btn = ctk.CTkButton(self, text="▶ Run Assessment", command=self.run)
-        self.run_btn.grid(row=3, column=0, sticky="e", padx=12, pady=10)
+        self.run_btn.grid(row=4, column=0, sticky="e", padx=12, pady=10)
         self.run_btn.configure(state="disabled")
 
     def _file_row(self, row, label, var, browse):
@@ -87,23 +91,14 @@ class AddVamsDataTab(ctk.CTkFrame):
         self.run_btn.configure(state="normal" if enabled else "disabled")
 
     def _browse_output(self):
-        path = filedialog.askopenfilename(
-            filetypes=[("Excel", "*.xlsx")]
-        )
+        path = self.dialogs.open_excel_file(title="Select generated workbook", save_workbook_only=True)
         if not path:
             return
         self.output_file.set(path)    
 
 
     def _browse_raw(self):
-        path = filedialog.askopenfilename(
-            filetypes=[
-                (
-                    "Excel",
-                    "*.xlsx *.xls *.xlsm",
-                )
-            ]
-        )
+        path = self.dialogs.open_excel_file(title="Select raw VAMS file")
         if not path:
             return
         self.raw_file.set(path)
@@ -449,7 +444,7 @@ class AddVamsDataTab(ctk.CTkFrame):
 
             if incoming_vams.empty:
 
-                messagebox.showwarning(
+                self.dialogs.show_warning(
                     "Warning",
                     "No rows found in VAMS file",
                 )
@@ -671,7 +666,7 @@ class AddVamsDataTab(ctk.CTkFrame):
             )
 
             self.state["last_output_file"] = output
-            messagebox.showinfo(
+            self.dialogs.show_info(
                 "Success",
                 "VAMS data merged successfully",
             )
@@ -683,7 +678,7 @@ class AddVamsDataTab(ctk.CTkFrame):
                 "Add VAMS Data failed"
             )
 
-            messagebox.showerror(
+            self.dialogs.show_error(
                 "Error",
                 str(exc),
             )

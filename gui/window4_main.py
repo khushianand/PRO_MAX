@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from tkinter import filedialog, messagebox
 import os
 import subprocess
 import sys
@@ -22,6 +21,7 @@ from gui.ui.logs_panel import LogsPanel
 from gui.ui.sidebar import Sidebar
 from gui.ui.themes import palette
 from gui.ui.workflow_stepper import WorkflowStepper
+from gui.qt_dialogs import DialogService
 
 
 class Window4Main(ctk.CTkFrame):
@@ -45,6 +45,7 @@ class Window4Main(ctk.CTkFrame):
         self.theme_name = self.state.get("theme_name", "Dark")
         self._stage_progress = 0
         self._timer_job = None
+        self.dialogs = DialogService()
         ctk.set_appearance_mode("light" if self.theme_name == "Light" else "dark")
         self.colors = palette(self.theme_name)
         self._apply_window_background()
@@ -210,6 +211,7 @@ class Window4Main(ctk.CTkFrame):
         if self._timer_job:
             self.after_cancel(self._timer_job)
             self._timer_job = None
+        self.dialogs = DialogService()
         for child in self.winfo_children():
             child.destroy()
         self._build()
@@ -227,12 +229,12 @@ class Window4Main(ctk.CTkFrame):
     def _open_output_file(self):
         output_path = self._current_output_path()
         if not output_path:
-            messagebox.showwarning("Open Output File", "No output file is selected or generated yet.")
+            self.dialogs.show_warning("Open Output File", "No output file is selected or generated yet.")
             return
 
         path = Path(output_path)
         if not path.exists():
-            messagebox.showwarning("Open Output File", f"Output file was not found:\n{path}")
+            self.dialogs.show_warning("Open Output File", f"Output file was not found:\n{path}")
             return
 
         if sys.platform.startswith("win"):
@@ -246,11 +248,11 @@ class Window4Main(ctk.CTkFrame):
     def _open_summary_dashboard(self):
         output_path = self._current_output_path()
         if not output_path:
-            messagebox.showwarning("Show Summary", "No output file is selected or generated yet.")
+            self.dialogs.show_warning("Show Summary", "No output file is selected or generated yet.")
             return
         path = Path(output_path)
         if not path.exists():
-            messagebox.showwarning("Show Summary", f"Output file was not found:\n{path}")
+            self.dialogs.show_warning("Show Summary", f"Output file was not found:\n{path}")
             return
         try:
             wb = load_workbook(path)
@@ -275,9 +277,11 @@ class Window4Main(ctk.CTkFrame):
         ctk.CTkLabel(modal, text="Use sidebar Logs to jump to the live console panel.").pack(anchor="w", padx=16, pady=8)
 
     def _export_logs(self):
-        path = filedialog.asksaveasfilename(
-            defaultextension=".log",
+        path = self.dialogs.save_file(
+            title="Export logs",
+            default_extension=".log",
             filetypes=[("Log Files", "*.log"), ("Text", "*.txt")],
+            qt_filter="Log Files (*.log);;Text Files (*.txt)",
             initialfile=f"run-log-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}.log",
         )
         if not path:
@@ -309,6 +313,7 @@ class Window4Main(ctk.CTkFrame):
 
     def _timer_tick(self):
         self._timer_job = None
+        self.dialogs = DialogService()
         metrics = self.state.get("live_metrics")
         if metrics and getattr(metrics, "_started_at", None) is not None:
             metrics.tick()

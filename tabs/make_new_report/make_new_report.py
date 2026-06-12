@@ -1,7 +1,6 @@
 """Tab 1: Create a new report from a raw file (no master comparison)."""
 
 import customtkinter as ctk
-from tkinter import filedialog, messagebox
 
 from tabs.make_new_report.logic import aggregate_unique
 from tabs.make_new_report.excel_writer import write_output
@@ -10,6 +9,7 @@ from tabs.make_new_report.excel_writer import build_3uk_qualys_total_sheet_df, b
 from tabs.make_new_report.parser import parse_scan_file
 from utils.file_handler import list_excel_sheets, validate_file
 from utils.memory import memory_session, release_large_objects
+from gui.qt_dialogs import DialogService
 
 
 class MakeNewReportTab(ctk.CTkFrame):
@@ -20,6 +20,7 @@ class MakeNewReportTab(ctk.CTkFrame):
         self.raw_file = ctk.StringVar()
         self.raw_sheet = ctk.StringVar()
         self.output_file = ctk.StringVar()
+        self.dialogs = DialogService()
         self._build_ui()
         self._bind_validation()
 
@@ -38,11 +39,13 @@ class MakeNewReportTab(ctk.CTkFrame):
 
     def _build_ui(self):
         self.grid_columnconfigure(0, weight=1)
-        self._field(0, "📊 Raw File", self.raw_file, self._browse_raw)
-        self._field(1, "🧾 Raw Sheet", self.raw_sheet, combo_values=["Select sheet"])
-        self._field(2, "📄 Output File", self.output_file, self._browse_output)
+        backend_text = f"Dialog backend: {self.dialogs.backend_name} (PySide/PyQt when available)"
+        ctk.CTkLabel(self, text=backend_text, text_color="#60a5fa").grid(row=0, column=0, sticky="w", padx=12, pady=(4, 0))
+        self._field(1, "📊 Raw File", self.raw_file, self._browse_raw)
+        self._field(2, "🧾 Raw Sheet", self.raw_sheet, combo_values=["Select sheet"])
+        self._field(3, "📄 Output File", self.output_file, self._browse_output)
         self.run_btn = ctk.CTkButton(self, text="▶ Run Assessment", command=self.run)
-        self.run_btn.grid(row=3, column=0, sticky="e", padx=12, pady=10)
+        self.run_btn.grid(row=4, column=0, sticky="e", padx=12, pady=10)
         self.run_btn.configure(state="disabled")
 
     def _bind_validation(self):
@@ -54,7 +57,7 @@ class MakeNewReportTab(ctk.CTkFrame):
         self.run_btn.configure(state="normal" if ok else "disabled")
 
     def _browse_raw(self):
-        path = filedialog.askopenfilename(filetypes=[("Excel", "*.xlsx *.xls *.xlsm")])
+        path = self.dialogs.open_excel_file()
         if not path: return
         self.raw_file.set(path)
         sheets = list_excel_sheets(path)
@@ -62,7 +65,7 @@ class MakeNewReportTab(ctk.CTkFrame):
         if sheets: self.raw_sheet.set(sheets[0])
 
     def _browse_output(self):
-        path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel", "*.xlsx")])
+        path = self.dialogs.save_excel_file()
         if path: self.output_file.set(path)
 
     def _validate_inputs(self):
@@ -96,11 +99,11 @@ class MakeNewReportTab(ctk.CTkFrame):
                     apply_table_formatting(ws, include_borders=ws.title in {"Total Vulnerabilities","Unique Vulnerabilities","Total Data","Unique Data"})
                 wb.save(output); wb.close()
             self.state["last_output_file"] = output
-            messagebox.showinfo("Success", f"Report generated:\n{output}")
+            self.dialogs.show_info("Success", f"Report generated:\n{output}")
             hooks.get("set_run_state", lambda *_: None)("Success")
         except Exception as exc:
             self.logger.exception("Make New Report failed")
-            messagebox.showerror("Error", str(exc))
+            self.dialogs.show_error("Error", str(exc))
             hooks.get("set_run_state", lambda *_: None)("Failed")
         finally:
             release_large_objects(locals(), ["raw_df", "total_df", "unique_df", "summary_df", "wb", "output"])
