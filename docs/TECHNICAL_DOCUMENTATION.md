@@ -193,26 +193,31 @@ Local processing files:
 Flow:
 
 ```text
-Validate raw file + raw sheet + output path
+Validate master file/sheet + raw file/sheet + output path
   ↓
 Parse raw scanner sheet
   ↓
-Parse master sheet if provided
+Parse required master sheet
   ↓
 classify_new_old(raw_df, master_df)
   ↓
 new_df + old_df
   ↓
-aggregate_unique(raw_df)
+Map 3UK + Qualys Total/New/Old/Unique outputs into template columns when needed
   ↓
-write_output(output, new_df, old_df, unique_df)
+aggregate_unique(raw_df) / build 3UK + Qualys unique template output
+  ↓
+write_output(output, new_df, old_df, unique_df, total_df=total_df)
 ```
 
 Important implementation rule:
 
-- `new_df` is passed as the first data frame into the tab-local `write_output()` function.
-- `write_output()` defaults the first sheet name to `Total Vulnerabilities`.
-- Therefore, **Total Vulnerabilities contains the new vulnerabilities for Generate Tracking**.
+- `total_df` contains all parsed raw findings and is written to `Total Vulnerabilities`.
+- `new_df` contains raw findings not matched in the master tracking sheet and is written to `New Vulnerabilities`.
+- `old_df` contains raw findings matched in the master tracking sheet and is written to `Old Vulnerabilities`.
+- `unique_df` contains aggregated total findings and is written to `Unique Vulnerabilities`.
+
+See [`GENERATE_TRACKING_LOGIC.md`](GENERATE_TRACKING_LOGIC.md) for the complete Generate Tracking explanation, including the comparison key aliases, Total/New/Old/Unique semantics, and 3UK + Qualys template mapping.
 
 ---
 
@@ -281,7 +286,7 @@ Each comparison module includes:
 
 `classify_new_old` builds row keys and splits raw rows based on whether their key exists in master data.
 
-`aggregate_unique` groups duplicate findings and merges repeated values with semicolon-separated de-duplication while retaining the highest severity.
+`aggregate_unique` groups duplicate findings and merges repeated values with comma-separated de-duplication while retaining the highest severity.
 
 ---
 

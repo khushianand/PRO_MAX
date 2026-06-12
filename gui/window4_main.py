@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from tkinter import filedialog, messagebox
 import os
 import subprocess
 import sys
@@ -22,6 +21,7 @@ from gui.ui.logs_panel import LogsPanel
 from gui.ui.sidebar import Sidebar
 from gui.ui.themes import palette
 from gui.ui.workflow_stepper import WorkflowStepper
+from gui.qt_dialogs import DialogService
 
 
 class Window4Main(ctk.CTkFrame):
@@ -45,6 +45,7 @@ class Window4Main(ctk.CTkFrame):
         self.theme_name = self.state.get("theme_name", "Dark")
         self._stage_progress = 0
         self._timer_job = None
+        self.dialogs = DialogService()
         ctk.set_appearance_mode("light" if self.theme_name == "Light" else "dark")
         self.colors = palette(self.theme_name)
         self._apply_window_background()
@@ -75,11 +76,11 @@ class Window4Main(ctk.CTkFrame):
         body.grid_rowconfigure(0, weight=1)
 
         self.sidebar = Sidebar(body, self.colors, self._on_nav)
-        self.sidebar.grid(row=0, column=0, sticky="ns", padx=(0, 8), pady=(0, 8))
+        self.sidebar.grid(row=0, column=0, sticky="ns", padx=(0, 12), pady=(0, 8))
 
         center = ctk.CTkFrame(
             body,
-            corner_radius=12,
+            corner_radius=20,
             fg_color=self.colors.get("center", self.colors["panel"]),
             border_width=1,
             border_color=self.colors["border"],
@@ -96,9 +97,9 @@ class Window4Main(ctk.CTkFrame):
 
         controls = ctk.CTkFrame(center, fg_color="transparent")
         controls.grid(row=2, column=0, sticky="ew", padx=10, pady=(0, 6))
-        ctk.CTkButton(controls, text="🌗 Theme", fg_color=self.colors["secondary"], command=self._toggle_theme).pack(side="left", padx=(0, 8))
-        ctk.CTkButton(controls, text="💾 Export Logs", fg_color=self.colors["secondary"], command=self._export_logs).pack(side="left", padx=(0, 8))
-        ctk.CTkButton(controls, text="🔁 Reset", fg_color="#f59e0b", command=self._reset_current_tab).pack(side="left")
+        ctk.CTkButton(controls, text="⚙  Theme", corner_radius=12, height=38, fg_color=self.colors.get("button_blue", self.colors["secondary"]), hover_color=self.colors.get("button_hover", self.colors["secondary"]), command=self._toggle_theme).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(controls, text="▣  Export Logs", corner_radius=12, height=38, fg_color=self.colors.get("button_blue", self.colors["secondary"]), hover_color=self.colors.get("button_hover", self.colors["secondary"]), command=self._export_logs).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(controls, text="☑  Reset", corner_radius=12, height=38, fg_color=self.colors.get("danger", self.colors.get("red", "#EF4444")), hover_color=self.colors.get("red", "#EF4444"), command=self._reset_current_tab).pack(side="left")
 
         tabs_holder = ctk.CTkFrame(center, fg_color="transparent")
         tabs_holder.grid(row=3, column=0, sticky="nsew", padx=10, pady=(0, 10))
@@ -122,7 +123,14 @@ class Window4Main(ctk.CTkFrame):
         self.paned.add(body, minsize=360)
         self.paned.add(self.logs, minsize=130)
 
-        self.status_bar = ctk.CTkLabel(self, text=f"Ready | Project: {self.state.get('selected_project','-')} | Scanner: {self.state.get('selected_scanner','-')} | Mode: {self.state.get('entry_mode','-')}")
+        self.status_bar = ctk.CTkLabel(
+            self,
+            text=f"● Ready | Project: {self.state.get('selected_project','-')} | Scanner: {self.state.get('selected_scanner','-')} | Mode: {self.state.get('entry_mode','-')} | v1.0.0",
+            fg_color=self.colors.get("version_bg", self.colors["panel"]),
+            text_color=self.colors.get("primary", self.colors["text"]),
+            corner_radius=14,
+            pady=6,
+        )
         self.status_bar.grid(row=2, column=0, sticky="ew", padx=12, pady=(0, 8))
 
         self.state["ui_hooks"] = {
@@ -200,7 +208,7 @@ class Window4Main(ctk.CTkFrame):
                     pass
 
     def _toggle_theme(self):
-        order = ["Dark", "Light", "Cybersecurity Neon"]
+        order = ["Dark", "Light"]
         self.theme_name = order[(order.index(self.theme_name) + 1) % len(order)]
         self.state["theme_name"] = self.theme_name
         ctk.set_appearance_mode("light" if self.theme_name == "Light" else "dark")
@@ -210,6 +218,7 @@ class Window4Main(ctk.CTkFrame):
         if self._timer_job:
             self.after_cancel(self._timer_job)
             self._timer_job = None
+        self.dialogs = DialogService()
         for child in self.winfo_children():
             child.destroy()
         self._build()
@@ -227,12 +236,12 @@ class Window4Main(ctk.CTkFrame):
     def _open_output_file(self):
         output_path = self._current_output_path()
         if not output_path:
-            messagebox.showwarning("Open Output File", "No output file is selected or generated yet.")
+            self.dialogs.show_warning("Open Output File", "No output file is selected or generated yet.")
             return
 
         path = Path(output_path)
         if not path.exists():
-            messagebox.showwarning("Open Output File", f"Output file was not found:\n{path}")
+            self.dialogs.show_warning("Open Output File", f"Output file was not found:\n{path}")
             return
 
         if sys.platform.startswith("win"):
@@ -246,11 +255,11 @@ class Window4Main(ctk.CTkFrame):
     def _open_summary_dashboard(self):
         output_path = self._current_output_path()
         if not output_path:
-            messagebox.showwarning("Show Summary", "No output file is selected or generated yet.")
+            self.dialogs.show_warning("Show Summary", "No output file is selected or generated yet.")
             return
         path = Path(output_path)
         if not path.exists():
-            messagebox.showwarning("Show Summary", f"Output file was not found:\n{path}")
+            self.dialogs.show_warning("Show Summary", f"Output file was not found:\n{path}")
             return
         try:
             wb = load_workbook(path)
@@ -275,9 +284,11 @@ class Window4Main(ctk.CTkFrame):
         ctk.CTkLabel(modal, text="Use sidebar Logs to jump to the live console panel.").pack(anchor="w", padx=16, pady=8)
 
     def _export_logs(self):
-        path = filedialog.asksaveasfilename(
-            defaultextension=".log",
+        path = self.dialogs.save_file(
+            title="Export logs",
+            default_extension=".log",
             filetypes=[("Log Files", "*.log"), ("Text", "*.txt")],
+            qt_filter="Log Files (*.log);;Text Files (*.txt)",
             initialfile=f"run-log-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}.log",
         )
         if not path:

@@ -15,12 +15,14 @@ from tabs.generate_tracking.excel_writer.sheets import write_disposition_sheet, 
 from tabs.generate_tracking.excel_writer.workbook import write_output
 from tabs.generate_tracking.excel_writer.three_uk_qualys import (
     THREE_UK_QUALYS_TOTAL_COLUMNS,
+    build_3uk_qualys_template_sheet_df,
     build_3uk_qualys_total_sheet_df,
     build_3uk_qualys_unique_sheet_df,
 )
 
 __all__ = [
     "THREE_UK_QUALYS_TOTAL_COLUMNS",
+    "build_3uk_qualys_template_sheet_df",
     "build_3uk_qualys_total_sheet_df",
     "build_3uk_qualys_unique_sheet_df",
     "read_sheet_as_df",
