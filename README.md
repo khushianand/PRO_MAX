@@ -139,6 +139,8 @@ Important output rule:
 - `old_df` / raw findings matched in the master tracking sheet are written to **Old Vulnerabilities**.
 - `unique_df` / aggregated total findings are written to **Unique Vulnerabilities**.
 
+For the full tab-specific comparison, 3UK + Qualys mapping, and output-layout rules, see [`docs/GENERATE_TRACKING_LOGIC.md`](docs/GENERATE_TRACKING_LOGIC.md).
+
 ### 3. Add VAMS Data
 
 Package: `tabs/add_vams_data/`

@@ -217,6 +217,8 @@ Important implementation rule:
 - `old_df` contains raw findings matched in the master tracking sheet and is written to `Old Vulnerabilities`.
 - `unique_df` contains aggregated total findings and is written to `Unique Vulnerabilities`.
 
+See [`GENERATE_TRACKING_LOGIC.md`](GENERATE_TRACKING_LOGIC.md) for the complete Generate Tracking explanation, including the comparison key aliases, Total/New/Old/Unique semantics, and 3UK + Qualys template mapping.
+
 ---
 
 ## 8. Add VAMS Data technical flow

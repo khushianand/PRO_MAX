@@ -248,7 +248,7 @@ Validate inputs
   ↓
 Parse raw file
   ↓
-Parse master file if provided
+Parse required master file
   ↓
 classify_new_old(raw_df, master_df)
   ↓
@@ -256,7 +256,7 @@ new_df + old_df
   ↓
 aggregate_unique(raw_df)
   ↓
-write_output(output, new_df, old_df, unique_df)
+write_output(output, new_df, old_df, unique_df, total_df=total_df)
 ```
 
 ### Output mapping
@@ -268,7 +268,7 @@ write_output(output, new_df, old_df, unique_df)
 | `old_df` / raw rows matched in master tracking | `Old Vulnerabilities` |
 | `unique_df` / aggregated total findings | `Unique Vulnerabilities` |
 
-Generate Tracking writes Total/New/Old/Unique sheets in the template vulnerability columns.
+Generate Tracking writes Total/New/Old/Unique sheets in the template vulnerability columns. For the complete Generate Tracking logic, including comparison aliases and 3UK + Qualys mapping, see [`GENERATE_TRACKING_LOGIC.md`](GENERATE_TRACKING_LOGIC.md).
 
 ---
 
