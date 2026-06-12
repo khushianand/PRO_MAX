@@ -15,7 +15,7 @@ class LogsPanel(ctk.CTkFrame):
         self.open_output_command = open_output_command
         top = ctk.CTkFrame(self, fg_color="transparent")
         top.pack(fill="x", padx=12, pady=(8, 4))
-        ctk.CTkLabel(top, text="● Live Logs", text_color=palette.get("green", "#22c55e"), font=ctk.CTkFont(weight="bold")).pack(side="left")
+        ctk.CTkLabel(top, text="● Live Logs", text_color=palette.get("status_ready", palette.get("green", "#22C55E")), font=ctk.CTkFont(weight="bold")).pack(side="left")
         ctk.CTkLabel(top, text="⌁⌁⌁", text_color=palette["primary"]).pack(side="right", padx=(8, 0))
         controls = ctk.CTkFrame(self, fg_color="transparent")
         controls.pack(fill="x", padx=12, pady=(2, 6))
@@ -30,7 +30,7 @@ class LogsPanel(ctk.CTkFrame):
             controls,
             text="▣ Open Output File",
             width=160,
-            fg_color=palette["primary"],
+            fg_color=palette.get("button_blue", palette["primary"]),
             command=self._open_output_file,
         ).pack(side="left", padx=3)
         self.text = ctk.CTkTextbox(

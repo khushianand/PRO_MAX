@@ -28,7 +28,7 @@ class HeaderPanel(ctk.CTkFrame):
         ctk.CTkLabel(
             self,
             text="Automate vulnerability assessment & reporting with ease",
-            text_color=palette["muted"],
+            text_color=palette.get("secondary_text", palette["muted"]),
         ).grid(row=1, column=1, sticky="w", pady=(0, 12))
         self.meta = ctk.CTkLabel(
             self,

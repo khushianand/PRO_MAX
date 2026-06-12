@@ -54,6 +54,6 @@ class Sidebar(ctk.CTkFrame):
             active = label == name
             btn.configure(
                 fg_color=(self.palette.get("sidebar_active", self.palette["secondary"]) if active else "transparent"),
-                text_color=(self.palette["primary"] if active else self.palette["text"]),
+                text_color=(self.palette.get("primary", self.palette["text"]) if active else self.palette["text"]),
             )
         self.on_select(name)

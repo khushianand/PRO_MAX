@@ -97,9 +97,9 @@ class Window4Main(ctk.CTkFrame):
 
         controls = ctk.CTkFrame(center, fg_color="transparent")
         controls.grid(row=2, column=0, sticky="ew", padx=10, pady=(0, 6))
-        ctk.CTkButton(controls, text="⚙ Theme", fg_color=self.colors["secondary"], command=self._toggle_theme).pack(side="left", padx=(0, 8))
-        ctk.CTkButton(controls, text="▣ Export Logs", fg_color=self.colors["secondary"], command=self._export_logs).pack(side="left", padx=(0, 8))
-        ctk.CTkButton(controls, text="⟳ Reset", fg_color=self.colors.get("red", "#f59e0b"), command=self._reset_current_tab).pack(side="left")
+        ctk.CTkButton(controls, text="⚙ Theme", fg_color=self.colors.get("button_blue", self.colors["secondary"]), command=self._toggle_theme).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(controls, text="▣ Export Logs", fg_color=self.colors.get("button_blue", self.colors["secondary"]), command=self._export_logs).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(controls, text="⟳ Reset", fg_color=self.colors.get("danger", self.colors.get("red", "#EF4444")), command=self._reset_current_tab).pack(side="left")
 
         tabs_holder = ctk.CTkFrame(center, fg_color="transparent")
         tabs_holder.grid(row=3, column=0, sticky="nsew", padx=10, pady=(0, 10))
