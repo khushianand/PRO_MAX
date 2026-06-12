@@ -34,8 +34,13 @@ class Sidebar(ctk.CTkFrame):
             text_color=palette["primary"],
             font=ctk.CTkFont(family="Segoe UI", size=18, weight="bold"),
         ).grid(row=0, column=0, sticky="w", padx=18, pady=(18, 8))
+        ctk.CTkFrame(
+            self,
+            height=1,
+            fg_color=palette.get("glass_highlight", palette.get("divider", palette["border"])),
+        ).grid(row=1, column=0, sticky="ew", padx=14, pady=(0, 10))
 
-        for i, (icon, label) in enumerate(self.ITEMS, start=1):
+        for i, (icon, label) in enumerate(self.ITEMS, start=2):
             btn = ctk.CTkButton(
                 self,
                 text=f"{icon}  {label}",
@@ -51,14 +56,14 @@ class Sidebar(ctk.CTkFrame):
             btn.grid(row=i, column=0, sticky="ew", padx=12, pady=4)
             self.buttons[label] = btn
 
-        self.grid_rowconfigure(len(self.ITEMS) + 1, weight=1)
+        self.grid_rowconfigure(len(self.ITEMS) + 2, weight=1)
         ctk.CTkLabel(
             self,
             text="Stronger today,\nSafer tomorrow.",
             text_color=palette.get("muted", palette["text"]),
             font=ctk.CTkFont(family="Segoe UI", size=13, weight="bold"),
             justify="center",
-        ).grid(row=len(self.ITEMS) + 2, column=0, sticky="s", padx=16, pady=(16, 20))
+        ).grid(row=len(self.ITEMS) + 3, column=0, sticky="s", padx=16, pady=(16, 20))
 
     def _select(self, name: str):
         active_text = self.palette.get("dark_active_text", "#FFFFFF") if self.palette.get("sidebar_active") == "#2D5FAE" else self.palette.get("primary", self.palette["text"])

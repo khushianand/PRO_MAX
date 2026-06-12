@@ -82,7 +82,10 @@ THEMES = {
 
         # Documentation-only shadow values for toolkit adapters that support CSS.
         "glass_bg": "#FFFFFF",
+        "glass_surface": "#F8FBFF",
         "glass_border": "#FFFFFF",
+        "glass_highlight": "#FFFFFF",
+        "glass_shadow": "#DCE4EF",
         "mesh_blue": "#DBEAFE",
         "mesh_purple": "#F3E8FF",
         "button_hover": "#3B82F6",
@@ -172,7 +175,10 @@ THEMES = {
 
         # Documentation-only shadow values for toolkit adapters that support CSS.
         "glass_bg": "#404A56",
+        "glass_surface": "#46515D",
         "glass_border": "#5B6673",
+        "glass_highlight": "#56606B",
+        "glass_shadow": "#2A333E",
         "mesh_blue": "#4A90FF",
         "mesh_purple": "#9B6DFF",
         "button_hover": "#6BA6FF",

@@ -56,8 +56,14 @@ class Window4Main(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self.header = HeaderPanel(self, self.colors, lambda: self.theme_name)
-        self.header.grid(row=0, column=0, sticky="ew", padx=12, pady=(10, 8))
+        header_shadow = ctk.CTkFrame(
+            self,
+            corner_radius=24,
+            fg_color=self.colors.get("glass_shadow", self.colors.get("divider", self.colors["border"])),
+        )
+        header_shadow.grid(row=0, column=0, sticky="ew", padx=12, pady=(10, 8))
+        self.header = HeaderPanel(header_shadow, self.colors, lambda: self.theme_name)
+        self.header.pack(fill="both", expand=True, padx=(0, 2), pady=(0, 2))
 
         self.paned = tk.PanedWindow(
             self,
@@ -75,17 +81,33 @@ class Window4Main(ctk.CTkFrame):
         body.grid_columnconfigure(1, weight=1)
         body.grid_rowconfigure(0, weight=1)
 
-        self.sidebar = Sidebar(body, self.colors, self._on_nav)
-        self.sidebar.grid(row=0, column=0, sticky="ns", padx=(0, 8), pady=(0, 8))
-
-        center = ctk.CTkFrame(
+        sidebar_shadow = ctk.CTkFrame(
             body,
+            corner_radius=24,
+            fg_color=self.colors.get("glass_shadow", self.colors.get("divider", self.colors["border"])),
+            width=224,
+        )
+        sidebar_shadow.grid(row=0, column=0, sticky="ns", padx=(0, 12), pady=(0, 8))
+        sidebar_shadow.grid_propagate(False)
+        self.sidebar = Sidebar(sidebar_shadow, self.colors, self._on_nav)
+        self.sidebar.pack(fill="both", expand=True, padx=(0, 2), pady=(0, 2))
+
+        center_shadow = ctk.CTkFrame(
+            body,
+            corner_radius=24,
+            fg_color=self.colors.get("glass_shadow", self.colors.get("divider", self.colors["border"])),
+        )
+        center_shadow.grid(row=0, column=1, sticky="nsew", pady=(0, 8))
+        center_shadow.grid_rowconfigure(0, weight=1)
+        center_shadow.grid_columnconfigure(0, weight=1)
+        center = ctk.CTkFrame(
+            center_shadow,
             corner_radius=20,
             fg_color=self.colors.get("center", self.colors["panel"]),
             border_width=1,
             border_color=self.colors.get("glass_border", self.colors["border"]),
         )
-        center.grid(row=0, column=1, sticky="nsew", pady=(0, 8))
+        center.grid(row=0, column=0, sticky="nsew", padx=(0, 2), pady=(0, 2))
         center.grid_rowconfigure(3, weight=1)
         center.grid_columnconfigure(0, weight=1)
 
@@ -119,9 +141,15 @@ class Window4Main(ctk.CTkFrame):
             tab.pack(fill="both", expand=True, padx=6, pady=6)
         self._build_summary_tab(self.tabview.tab("📈 Show Summary"))
 
-        self.logs = LogsPanel(self.paned, self.colors, self._open_output_file)
+        logs_shadow = ctk.CTkFrame(
+            self.paned,
+            corner_radius=24,
+            fg_color=self.colors.get("glass_shadow", self.colors.get("divider", self.colors["border"])),
+        )
+        self.logs = LogsPanel(logs_shadow, self.colors, self._open_output_file)
+        self.logs.pack(fill="both", expand=True, padx=(0, 2), pady=(0, 2))
         self.paned.add(body, minsize=360)
-        self.paned.add(self.logs, minsize=130)
+        self.paned.add(logs_shadow, minsize=130)
 
         self.status_bar = ctk.CTkLabel(
             self,

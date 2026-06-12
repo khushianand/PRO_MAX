@@ -41,12 +41,28 @@ class HeaderPanel(ctk.CTkFrame):
             text_color=palette.get("secondary_text", palette["muted"]),
             font=ctk.CTkFont(family="Segoe UI", size=13),
         ).grid(row=1, column=1, sticky="w", pady=(0, 20))
+        decoration = ctk.CTkFrame(self, fg_color="transparent")
+        decoration.grid(row=0, column=2, rowspan=2, sticky="e", padx=(0, 14))
         ctk.CTkLabel(
-            self,
+            decoration,
             text="••••••\n••••••\n••••••",
             text_color=palette.get("divider", palette["border"]),
             justify="right",
-        ).grid(row=0, column=2, rowspan=2, sticky="e", padx=(0, 14))
+        ).pack(anchor="e")
+        ctk.CTkFrame(
+            decoration,
+            width=86,
+            height=8,
+            corner_radius=4,
+            fg_color=palette.get("mesh_blue", palette["primary"]),
+        ).pack(anchor="e", pady=(8, 0))
+        ctk.CTkFrame(
+            decoration,
+            width=56,
+            height=8,
+            corner_radius=4,
+            fg_color=palette.get("mesh_purple", palette.get("purple", palette["primary"])),
+        ).pack(anchor="e", pady=(6, 0))
         self.meta = ctk.CTkLabel(
             self,
             textvariable=self._meta_text(),
