@@ -3,7 +3,6 @@
 import customtkinter as ctk
 import pandas as pd
 
-from tkinter import filedialog, messagebox
 
 from openpyxl import (
     load_workbook,
@@ -29,6 +28,8 @@ from tabs.add_vams_data.excel_writer.formatting import apply_table_formatting
 
 from utils.file_handler import list_excel_sheets, validate_file
 from utils.memory import memory_session, release_large_objects
+from gui.qt_dialogs import DialogService
+from gui.ui.themes import palette
 
 
 class AddVamsDataTab(ctk.CTkFrame):
@@ -40,7 +41,7 @@ class AddVamsDataTab(ctk.CTkFrame):
         logger,
     ):
 
-        super().__init__(master)
+        super().__init__(master, fg_color="transparent")
 
         self.state = app_state
 
@@ -52,30 +53,41 @@ class AddVamsDataTab(ctk.CTkFrame):
 
         self.raw_sheet = ctk.StringVar()
 
+        self.dialogs = DialogService()
+        self.colors = palette(self.state.get("theme_name", "Dark"))
+
         self._build()
         self._bind_validation()
 
 
     def _build(self):
         self.grid_columnconfigure(0, weight=1)
-        self._file_row(0, "📄 Output file", self.output_file, self._browse_output)
-        self._file_row(1, "📊 Raw VAMS file", self.raw_file, self._browse_raw)
-        sheet_card = ctk.CTkFrame(self, corner_radius=12)
-        sheet_card.grid(row=2, column=0, sticky="ew", padx=10, pady=8)
-        ctk.CTkLabel(sheet_card, text="🧾 Raw VAMS sheet").grid(row=0, column=0, sticky="w", padx=12, pady=(8,4))
-        self.raw_sheet_combo = ctk.CTkComboBox(sheet_card, values=[""], variable=self.raw_sheet)
-        self.raw_sheet_combo.grid(row=1, column=0, sticky="w", padx=12, pady=(0,8))
-        self.run_btn = ctk.CTkButton(self, text="▶ Run Assessment", command=self.run)
-        self.run_btn.grid(row=3, column=0, sticky="e", padx=12, pady=10)
+        backend_text = f"Dialog backend: {self.dialogs.backend_name} (PySide/PyQt when available)"
+        ctk.CTkLabel(self, text=backend_text, text_color=self.colors.get("light_blue", self.colors["primary"]), font=ctk.CTkFont(size=12)).grid(row=0, column=0, sticky="w", padx=16, pady=(6, 0))
+        self._file_row(1, "📄 Output file", self.output_file, self._browse_output)
+        self._file_row(2, "📊 Raw VAMS file", self.raw_file, self._browse_raw)
+        sheet_card = ctk.CTkFrame(self, corner_radius=18, fg_color=self.colors.get("glass_bg", self.colors["panel"]), border_width=1, border_color=self.colors.get("glass_border", self.colors["border"]))
+        sheet_card.grid(row=3, column=0, sticky="ew", padx=16, pady=10)
+        ctk.CTkLabel(sheet_card, text="🧾 Raw VAMS sheet", text_color=self.colors["text"], font=ctk.CTkFont(family="Segoe UI", size=14, weight="bold")).grid(row=0, column=0, sticky="w", padx=16, pady=(14, 6))
+        self.raw_sheet_combo = ctk.CTkComboBox(sheet_card, values=[""], variable=self.raw_sheet, corner_radius=12, height=38, fg_color=self.colors.get("input_bg", self.colors["panel"]), border_color=self.colors.get("input_border", self.colors["border"]), button_color=self.colors.get("button_blue", self.colors["primary"]))
+        self.raw_sheet_combo.grid(row=1, column=0, sticky="w", padx=16, pady=(0, 14))
+        self.run_btn = ctk.CTkButton(self, text="🛡  Run Assessment", command=self.run, height=42, corner_radius=12, fg_color=self.colors.get("run_button", self.colors.get("purple", self.colors["primary"])), hover_color=self.colors.get("purple_accent", self.colors.get("button_hover", self.colors["primary"])), font=ctk.CTkFont(family="Segoe UI", size=13, weight="bold"))
+        self.run_btn.grid(row=4, column=0, sticky="e", padx=16, pady=14)
         self.run_btn.configure(state="disabled")
 
     def _file_row(self, row, label, var, browse):
-        card = ctk.CTkFrame(self, corner_radius=12)
-        card.grid(row=row, column=0, sticky="ew", padx=10, pady=8)
+        card = ctk.CTkFrame(
+            self,
+            corner_radius=18,
+            fg_color=self.colors.get("glass_bg", self.colors["panel"]),
+            border_width=1,
+            border_color=self.colors.get("glass_border", self.colors["border"]),
+        )
+        card.grid(row=row, column=0, sticky="ew", padx=16, pady=10)
         card.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(card, text=label).grid(row=0, column=0, sticky="w", padx=12, pady=(8,4))
-        ctk.CTkEntry(card, textvariable=var).grid(row=1, column=0, sticky="ew", padx=12, pady=(0,8))
-        ctk.CTkButton(card, text="Browse", command=browse, width=110).grid(row=1, column=1, padx=12)
+        ctk.CTkLabel(card, text=label, text_color=self.colors["text"], font=ctk.CTkFont(family="Segoe UI", size=14, weight="bold")).grid(row=0, column=0, sticky="w", padx=16, pady=(14, 6))
+        ctk.CTkEntry(card, textvariable=var, corner_radius=12, height=38, fg_color=self.colors.get("input_bg", self.colors["panel"]), border_color=self.colors.get("input_border", self.colors["border"])).grid(row=1, column=0, sticky="ew", padx=16, pady=(0, 14))
+        ctk.CTkButton(card, text="📂  Browse", command=browse, width=140, height=38, corner_radius=12, fg_color=self.colors.get("button_blue", self.colors["primary"]), hover_color=self.colors.get("button_hover", self.colors["primary"])).grid(row=1, column=1, padx=(0, 16), pady=(0, 14))
 
     def _bind_validation(self):
         for var in (self.output_file, self.raw_file, self.raw_sheet):
@@ -87,23 +99,14 @@ class AddVamsDataTab(ctk.CTkFrame):
         self.run_btn.configure(state="normal" if enabled else "disabled")
 
     def _browse_output(self):
-        path = filedialog.askopenfilename(
-            filetypes=[("Excel", "*.xlsx")]
-        )
+        path = self.dialogs.open_excel_file(title="Select generated workbook", save_workbook_only=True)
         if not path:
             return
         self.output_file.set(path)    
 
 
     def _browse_raw(self):
-        path = filedialog.askopenfilename(
-            filetypes=[
-                (
-                    "Excel",
-                    "*.xlsx *.xls *.xlsm",
-                )
-            ]
-        )
+        path = self.dialogs.open_excel_file(title="Select raw VAMS file")
         if not path:
             return
         self.raw_file.set(path)
@@ -449,7 +452,7 @@ class AddVamsDataTab(ctk.CTkFrame):
 
             if incoming_vams.empty:
 
-                messagebox.showwarning(
+                self.dialogs.show_warning(
                     "Warning",
                     "No rows found in VAMS file",
                 )
@@ -671,7 +674,7 @@ class AddVamsDataTab(ctk.CTkFrame):
             )
 
             self.state["last_output_file"] = output
-            messagebox.showinfo(
+            self.dialogs.show_info(
                 "Success",
                 "VAMS data merged successfully",
             )
@@ -683,7 +686,7 @@ class AddVamsDataTab(ctk.CTkFrame):
                 "Add VAMS Data failed"
             )
 
-            messagebox.showerror(
+            self.dialogs.show_error(
                 "Error",
                 str(exc),
             )

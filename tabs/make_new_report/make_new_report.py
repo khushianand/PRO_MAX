@@ -1,7 +1,6 @@
 """Tab 1: Create a new report from a raw file (no master comparison)."""
 
 import customtkinter as ctk
-from tkinter import filedialog, messagebox
 
 from tabs.make_new_report.logic import aggregate_unique
 from tabs.make_new_report.excel_writer import write_output
@@ -10,6 +9,8 @@ from tabs.make_new_report.excel_writer import build_3uk_qualys_total_sheet_df, b
 from tabs.make_new_report.parser import parse_scan_file
 from utils.file_handler import list_excel_sheets, validate_file
 from utils.memory import memory_session, release_large_objects
+from gui.qt_dialogs import DialogService
+from gui.ui.themes import palette
 
 
 class MakeNewReportTab(ctk.CTkFrame):
@@ -20,29 +21,39 @@ class MakeNewReportTab(ctk.CTkFrame):
         self.raw_file = ctk.StringVar()
         self.raw_sheet = ctk.StringVar()
         self.output_file = ctk.StringVar()
+        self.dialogs = DialogService()
+        self.colors = palette(self.state.get("theme_name", "Dark"))
         self._build_ui()
         self._bind_validation()
 
     def _field(self, row, label, var, browse_cmd=None, combo_values=None):
-        card = ctk.CTkFrame(self, corner_radius=12)
-        card.grid(row=row, column=0, sticky="ew", padx=10, pady=8)
+        card = ctk.CTkFrame(
+            self,
+            corner_radius=18,
+            fg_color=self.colors.get("glass_bg", self.colors["panel"]),
+            border_width=1,
+            border_color=self.colors.get("glass_border", self.colors["border"]),
+        )
+        card.grid(row=row, column=0, sticky="ew", padx=16, pady=10)
         card.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(card, text=label).grid(row=0, column=0, sticky="w", padx=12, pady=(8, 4))
+        ctk.CTkLabel(card, text=label, text_color=self.colors["text"], font=ctk.CTkFont(family="Segoe UI", size=14, weight="bold")).grid(row=0, column=0, sticky="w", padx=16, pady=(14, 6))
         if combo_values is None:
-            ctk.CTkEntry(card, textvariable=var).grid(row=1, column=0, sticky="ew", padx=12, pady=(0, 8))
+            ctk.CTkEntry(card, textvariable=var, corner_radius=12, height=38, fg_color=self.colors.get("input_bg", self.colors["panel"]), border_color=self.colors.get("input_border", self.colors["border"])).grid(row=1, column=0, sticky="ew", padx=16, pady=(0, 14))
         else:
-            self.raw_sheet_combo = ctk.CTkComboBox(card, values=combo_values, variable=var)
-            self.raw_sheet_combo.grid(row=1, column=0, sticky="w", padx=12, pady=(0, 8))
+            self.raw_sheet_combo = ctk.CTkComboBox(card, values=combo_values, variable=var, corner_radius=12, height=38, fg_color=self.colors.get("input_bg", self.colors["panel"]), border_color=self.colors.get("input_border", self.colors["border"]), button_color=self.colors.get("button_blue", self.colors["primary"]))
+            self.raw_sheet_combo.grid(row=1, column=0, sticky="w", padx=16, pady=(0, 14))
         if browse_cmd:
-            ctk.CTkButton(card, text="Browse", command=browse_cmd, width=110).grid(row=1, column=1, padx=12)
+            ctk.CTkButton(card, text="📂  Browse", command=browse_cmd, width=140, height=38, corner_radius=12, fg_color=self.colors.get("button_blue", self.colors["primary"]), hover_color=self.colors.get("button_hover", self.colors["primary"])).grid(row=1, column=1, padx=(0, 16), pady=(0, 14))
 
     def _build_ui(self):
         self.grid_columnconfigure(0, weight=1)
-        self._field(0, "📊 Raw File", self.raw_file, self._browse_raw)
-        self._field(1, "🧾 Raw Sheet", self.raw_sheet, combo_values=["Select sheet"])
-        self._field(2, "📄 Output File", self.output_file, self._browse_output)
-        self.run_btn = ctk.CTkButton(self, text="▶ Run Assessment", command=self.run)
-        self.run_btn.grid(row=3, column=0, sticky="e", padx=12, pady=10)
+        backend_text = f"Dialog backend: {self.dialogs.backend_name} (PySide/PyQt when available)"
+        ctk.CTkLabel(self, text=backend_text, text_color=self.colors.get("light_blue", self.colors["primary"]), font=ctk.CTkFont(size=12)).grid(row=0, column=0, sticky="w", padx=16, pady=(6, 0))
+        self._field(1, "📊 Raw File", self.raw_file, self._browse_raw)
+        self._field(2, "🧾 Raw Sheet", self.raw_sheet, combo_values=["Select sheet"])
+        self._field(3, "📄 Output File", self.output_file, self._browse_output)
+        self.run_btn = ctk.CTkButton(self, text="🛡  Run Assessment", command=self.run, height=42, corner_radius=12, fg_color=self.colors.get("run_button", self.colors.get("purple", self.colors["primary"])), hover_color=self.colors.get("purple_accent", self.colors.get("button_hover", self.colors["primary"])), font=ctk.CTkFont(family="Segoe UI", size=13, weight="bold"))
+        self.run_btn.grid(row=4, column=0, sticky="e", padx=16, pady=14)
         self.run_btn.configure(state="disabled")
 
     def _bind_validation(self):
@@ -54,7 +65,7 @@ class MakeNewReportTab(ctk.CTkFrame):
         self.run_btn.configure(state="normal" if ok else "disabled")
 
     def _browse_raw(self):
-        path = filedialog.askopenfilename(filetypes=[("Excel", "*.xlsx *.xls *.xlsm")])
+        path = self.dialogs.open_excel_file()
         if not path: return
         self.raw_file.set(path)
         sheets = list_excel_sheets(path)
@@ -62,7 +73,7 @@ class MakeNewReportTab(ctk.CTkFrame):
         if sheets: self.raw_sheet.set(sheets[0])
 
     def _browse_output(self):
-        path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel", "*.xlsx")])
+        path = self.dialogs.save_excel_file()
         if path: self.output_file.set(path)
 
     def _validate_inputs(self):
@@ -96,11 +107,11 @@ class MakeNewReportTab(ctk.CTkFrame):
                     apply_table_formatting(ws, include_borders=ws.title in {"Total Vulnerabilities","Unique Vulnerabilities","Total Data","Unique Data"})
                 wb.save(output); wb.close()
             self.state["last_output_file"] = output
-            messagebox.showinfo("Success", f"Report generated:\n{output}")
+            self.dialogs.show_info("Success", f"Report generated:\n{output}")
             hooks.get("set_run_state", lambda *_: None)("Success")
         except Exception as exc:
             self.logger.exception("Make New Report failed")
-            messagebox.showerror("Error", str(exc))
+            self.dialogs.show_error("Error", str(exc))
             hooks.get("set_run_state", lambda *_: None)("Failed")
         finally:
             release_large_objects(locals(), ["raw_df", "total_df", "unique_df", "summary_df", "wb", "output"])

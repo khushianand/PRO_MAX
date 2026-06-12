@@ -222,7 +222,7 @@ Update state/logs/metrics
 
 Folder: `tabs/generate_tracking/`
 
-Purpose: compare raw scanner findings with an optional master workbook and generate tracking output.
+Purpose: compare raw scanner findings with a required master workbook and generate tracking output.
 
 ### Files
 
@@ -242,13 +242,13 @@ Purpose: compare raw scanner findings with an optional master workbook and gener
 ### Run sequence
 
 ```text
-User selects raw file/sheet/output path and optional master file/sheet
+User selects raw file/sheet/output path and required master file/sheet
   ↓
 Validate inputs
   ↓
 Parse raw file
   ↓
-Parse master file if provided
+Parse required master file
   ↓
 classify_new_old(raw_df, master_df)
   ↓
@@ -256,18 +256,19 @@ new_df + old_df
   ↓
 aggregate_unique(raw_df)
   ↓
-write_output(output, new_df, old_df, unique_df)
+write_output(output, new_df, old_df, unique_df, total_df=total_df)
 ```
 
 ### Output mapping
 
 | DataFrame | Output sheet |
 |---|---|
-| `new_df` | `Total Vulnerabilities` |
-| `old_df` | `Old Vulnerabilities` |
-| `unique_df` | `Unique Vulnerabilities` |
+| `total_df` / parsed raw data | `Total Vulnerabilities` |
+| `new_df` / raw rows not matched in master tracking | `New Vulnerabilities` |
+| `old_df` / raw rows matched in master tracking | `Old Vulnerabilities` |
+| `unique_df` / aggregated total findings | `Unique Vulnerabilities` |
 
-This naming is important: in Generate Tracking, the `Total Vulnerabilities` sheet contains the new findings produced by comparison.
+Generate Tracking writes Total/New/Old/Unique sheets in the template vulnerability columns. For the complete Generate Tracking logic, including comparison aliases and 3UK + Qualys mapping, see [`GENERATE_TRACKING_LOGIC.md`](GENERATE_TRACKING_LOGIC.md).
 
 ---
 
