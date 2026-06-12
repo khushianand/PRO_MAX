@@ -147,6 +147,16 @@ class GenerateTrackingTab(ctk.CTkFrame):
                 apply_severity_filter=False,
             ).df
 
+    def _is_three_uk_qualys(self) -> bool:
+        return (
+            self.state["selected_project"].strip().casefold() == "3uk"
+            and self.state["selected_scanner"].strip().casefold() == "qualys"
+        )
+
+    def _require_comparable_master_rows(self, master_df):
+        if master_df is None or master_df.empty:
+            raise ValueError("Master sheet has no parsed rows to compare against")
+
 
     def run(self):
 
@@ -167,10 +177,7 @@ class GenerateTrackingTab(ctk.CTkFrame):
 
             hooks.get("set_stage", lambda *_: None)("Parse", 2)
 
-            if (
-                self.state["selected_project"].strip().casefold() == "3uk"
-                and self.state["selected_scanner"].strip().casefold() == "qualys"
-            ):
+            if self._is_three_uk_qualys():
                 raw_df = build_3uk_qualys_total_sheet_df(
                     self.raw_file.get(),
                     self.raw_sheet.get(),
@@ -188,10 +195,7 @@ class GenerateTrackingTab(ctk.CTkFrame):
             # PARSE MASTER FILE
             # -------------------------------------------------
 
-            if (
-                self.state["selected_project"].strip().casefold() == "3uk"
-                and self.state["selected_scanner"].strip().casefold() == "qualys"
-            ):
+            if self._is_three_uk_qualys():
 
                 master_df = build_3uk_qualys_total_sheet_df(
                     self.master_file.get(),
@@ -205,6 +209,9 @@ class GenerateTrackingTab(ctk.CTkFrame):
                     self.master_sheet.get(),
                     "Master file",
                 )
+
+            self._require_comparable_master_rows(master_df)
+
             # -------------------------------------------------
             # CLASSIFICATION
             # -------------------------------------------------
@@ -214,10 +221,13 @@ class GenerateTrackingTab(ctk.CTkFrame):
                 raw_df,
                 master_df,
             )
-            if (
-                self.state["selected_project"].strip().casefold() == "3uk"
-                and self.state["selected_scanner"].strip().casefold() == "qualys"
-            ):
+
+            # Required output semantics:
+            # - total_df is every parsed Raw finding.
+            # - new_df is Raw findings not matched in Master.
+            # - old_df is Raw findings matched in Master.
+            # - unique_df is aggregated from all Raw/Total findings.
+            if self._is_three_uk_qualys():
 
                 total_df = build_3uk_qualys_template_sheet_df(raw_df)
                 new_df = build_3uk_qualys_template_sheet_df(new_df)

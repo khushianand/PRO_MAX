@@ -8,6 +8,8 @@ import pandas as pd
 
 from tabs.generate_tracking.parser import TEMPLATE_COLUMNS, highest_risk, split_values
 
+MATCH_KEY_FIELDS = ("Name", "Host / Image", "Port", "CVE")
+
 _KEY_ALIASES = {
     "Name": ("Name", "Title", "Vulnerability", "Plugin Name"),
     "Host / Image": ("Host / Image", "Host", "IP", "DNS", "Hostname", "Image"),
@@ -35,7 +37,7 @@ def _comparison_key(df: pd.DataFrame) -> pd.Series:
     key_parts = pd.DataFrame(
         {
             key_name: _series_for_key(df, key_name)
-            for key_name in ("Name", "Host / Image", "Port", "CVE")
+            for key_name in MATCH_KEY_FIELDS
         },
         index=df.index,
     )
@@ -61,7 +63,9 @@ def classify_new_old(raw_df: pd.DataFrame, master_df: Optional[pd.DataFrame]) ->
     Total Vulnerabilities data, so the comparison key resolves common aliases
     such as Title/IP/CVE ID before comparing rows.
     """
-    if master_df is None or master_df.empty:
+    if master_df is None:
+        raise ValueError("Master data is required for Generate Tracking comparison")
+    if master_df.empty:
         return raw_df.copy(), raw_df.iloc[0:0].copy()
 
     raw_keys = _comparison_key(raw_df)
