@@ -97,9 +97,9 @@ class Window4Main(ctk.CTkFrame):
 
         controls = ctk.CTkFrame(center, fg_color="transparent")
         controls.grid(row=2, column=0, sticky="ew", padx=10, pady=(0, 6))
-        ctk.CTkButton(controls, text="🌗 Theme", fg_color=self.colors["secondary"], command=self._toggle_theme).pack(side="left", padx=(0, 8))
-        ctk.CTkButton(controls, text="💾 Export Logs", fg_color=self.colors["secondary"], command=self._export_logs).pack(side="left", padx=(0, 8))
-        ctk.CTkButton(controls, text="🔁 Reset", fg_color="#f59e0b", command=self._reset_current_tab).pack(side="left")
+        ctk.CTkButton(controls, text="⚙ Theme", fg_color=self.colors["secondary"], command=self._toggle_theme).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(controls, text="▣ Export Logs", fg_color=self.colors["secondary"], command=self._export_logs).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(controls, text="⟳ Reset", fg_color=self.colors.get("red", "#f59e0b"), command=self._reset_current_tab).pack(side="left")
 
         tabs_holder = ctk.CTkFrame(center, fg_color="transparent")
         tabs_holder.grid(row=3, column=0, sticky="nsew", padx=10, pady=(0, 10))
@@ -123,7 +123,14 @@ class Window4Main(ctk.CTkFrame):
         self.paned.add(body, minsize=360)
         self.paned.add(self.logs, minsize=130)
 
-        self.status_bar = ctk.CTkLabel(self, text=f"Ready | Project: {self.state.get('selected_project','-')} | Scanner: {self.state.get('selected_scanner','-')} | Mode: {self.state.get('entry_mode','-')}")
+        self.status_bar = ctk.CTkLabel(
+            self,
+            text=f"● Ready | Project: {self.state.get('selected_project','-')} | Scanner: {self.state.get('selected_scanner','-')} | Mode: {self.state.get('entry_mode','-')} | v1.0.0",
+            fg_color=self.colors.get("version_bg", self.colors["panel"]),
+            text_color=self.colors.get("primary", self.colors["text"]),
+            corner_radius=14,
+            pady=6,
+        )
         self.status_bar.grid(row=2, column=0, sticky="ew", padx=12, pady=(0, 8))
 
         self.state["ui_hooks"] = {
@@ -313,7 +320,6 @@ class Window4Main(ctk.CTkFrame):
 
     def _timer_tick(self):
         self._timer_job = None
-        self.dialogs = DialogService()
         metrics = self.state.get("live_metrics")
         if metrics and getattr(metrics, "_started_at", None) is not None:
             metrics.tick()
