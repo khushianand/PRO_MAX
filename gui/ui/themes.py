@@ -1,35 +1,210 @@
-"""Theme management for modern cybersecurity dashboard UI."""
+"""Theme management for the modern SaaS/cybersecurity dashboard UI."""
 
 from __future__ import annotations
 
+# The palette dictionaries intentionally expose every approved hex code for the
+# light and dark themes.  UI components can use semantic keys instead of hard-
+# coding colors, which keeps theme behavior consistent across the dashboard.
 THEMES = {
-    "Dark": {
-        "bg": "#1e1e2e",
-        "panel": "#27293d",
-        "primary": "#00c896",
-        "secondary": "#3b82f6",
-        "text": "#f5f5f5",
-        "muted": "#9ca3af",
-        "border": "#3a3d4d",
-    },
     "Light": {
-        "bg": "#ffffff",
-        "panel": "#ffffff",
-        "center": "#2563eb",
-        "primary": "#2563eb",
-        "secondary": "#2563eb",
-        "text": "#1f2937",
-        "muted": "#64748b",
-        "border": "#dbeafe",
+        # Primary backgrounds
+        "bg": "#F7F9FC",
+        "window_bg": "#F7F9FC",
+        "panel": "#FFFFFF",
+        "center": "#F3F6FB",
+        "card_alt": "#F3F6FB",
+        "secondary_panel": "#F3F6FB",
+        "sidebar_bg": "#FAFBFD",
+        "hover_bg": "#EEF4FF",
+        "nav_hover": "#EEF4FF",
+        "table_alt": "#F3F6FB",
+
+        # Borders and dividers
+        "border": "#E4EAF3",
+        "main_border": "#E4EAF3",
+        "card_border": "#DCE4EF",
+        "divider": "#EEF2F7",
+        "input_border": "#D7E0EC",
+
+        # Text
+        "text": "#1F2937",
+        "primary_text": "#1F2937",
+        "secondary_text": "#64748B",
+        "muted": "#6B7280",
+        "muted_text": "#6B7280",
+        "placeholder": "#94A3B8",
+        "disabled": "#94A3B8",
+
+        # Blue theme colors
+        "primary": "#2563EB",
+        "primary_blue": "#2563EB",
+        "secondary": "#3B82F6",
+        "button_blue": "#3B82F6",
+        "light_blue": "#60A5FA",
+        "sidebar_active": "#EAF2FF",
+        "blue_glow": "#DBEAFE",
+        "version_bg": "#DBEAFE",
+
+        # Green colors
+        "green": "#22C55E",
+        "success": "#22C55E",
+        "success_light": "#DCFCE7",
+        "status_ready": "#10B981",
+        "success_badge": "#16A34A",
+
+        # Purple colors
+        "purple": "#7C3AED",
+        "primary_purple": "#7C3AED",
+        "purple_accent": "#8B5CF6",
+        "purple_light": "#F3E8FF",
+        "run_button": "#6D28D9",
+
+        # Orange colors
+        "orange": "#F59E0B",
+        "orange_accent": "#F59E0B",
+        "warning": "#FB923C",
+        "warning_orange": "#FB923C",
+        "orange_light": "#FEF3C7",
+
+        # Red colors
+        "red": "#FF5A5A",
+        "error": "#FF5A5A",
+        "danger": "#DC2626",
+        "error_light": "#FEE2E2",
+
+        # Inputs/logs
+        "input_bg": "#FFFFFF",
+        "log_bg": "#FFFFFF",
+        "log_info": "#EFF6FF",
+        "log_success": "#ECFDF5",
+        "log_warning": "#FFF7ED",
+        "log_error": "#FEF2F2",
+
+        # Runtime behavior
+        "mesh_blue": "#DBEAFE",
+        "mesh_purple": "#F3E8FF",
+        "button_hover": "#3B82F6",
+        "dark_active_text": "#FFFFFF",
+        "transition": "all 0.2s ease",
+    },
+    "Dark": {
+        # Core dark slate-grey backgrounds
+        "bg": "#353F4A",
+        "main_bg": "#353F4A",
+        "window_bg": "#2F3843",
+        "secondary_bg": "#343D48",
+        "panel": "#404A56",
+        "center": "#444E5A",
+        "card_alt": "#444E5A",
+        "elevated_card": "#38414C",
+        "sidebar_bg": "#38424D",
+        "footer_bg": "#2A333E",
+        "hover_bg": "#394451",
+        "nav_hover": "#394451",
+        "table_alt": "#394451",
+
+        # Borders and surfaces
+        "border": "#5B6673",
+        "soft_border": "#46515D",
+        "card_border": "#4A5562",
+        "divider": "#4D5764",
+        "input_border": "#5C6672",
+
+        # Text
+        "text": "#F5F7FA",
+        "primary_text": "#F5F7FA",
+        "secondary_text": "#D1D7DE",
+        "legacy_secondary_text": "#D1D7DE",
+        "muted": "#9AA5B1",
+        "muted_text": "#9AA5B1",
+        "legacy_muted_text": "#AAB3BD",
+        "disabled": "#7B8794",
+
+        # Blue accents
+        "primary": "#4A90FF",
+        "primary_blue": "#4080D9",
+        "secondary": "#9B6DFF",
+        "bright_blue": "#4A90FF",
+        "hover_blue": "#5B9DFF",
+        "sidebar_active": "#2D5FAE",
+        "blue_glow": "#7FB3FF",
+        "version_bg": "#2F4F80",
+
+        # Green accents
+        "green": "#2EE67B",
+        "success": "#22C55E",
+        "bright_green": "#2EE67B",
+        "success_glow": "#58F59A",
+        "status_ready": "#22C55E",
+        "success_badge": "#2EE67B",
+
+        # Purple accents
+        "purple": "#9B6DFF",
+        "primary_purple": "#7C3AED",
+        "purple_accent": "#8B5CF6",
+        "purple_glow": "#B794F4",
+        "run_button": "#9B6DFF",
+
+        # Orange accents
+        "orange": "#FFB020",
+        "orange_accent": "#F59E0B",
+        "bright_orange": "#FFB020",
+        "warning": "#FFB020",
+        "orange_glow": "#FFD166",
+
+        # Red/error accents
+        "red": "#FF5A5A",
+        "error": "#FF5A5A",
+        "danger": "#DC2626",
+
+        # Inputs/logs
+        "input_bg": "#343D48",
+        "log_bg": "#3B4552",
+        "log_hover": "#394451",
+        "log_info": "#2F4F80",
+        "log_success": "#255C41",
+        "log_warning": "#6A4A1F",
+        "log_error": "#6C2B2B",
+
+        # Runtime behavior
+        "mesh_blue": "#4A90FF",
+        "mesh_purple": "#9B6DFF",
+        "button_hover": "#6BA6FF",
+        "dark_active_text": "#FFFFFF",
+        "transition": "all 0.2s ease",
     },
     "Cybersecurity Neon": {
-        "bg": "#0f172a",
+        "bg": "#0F172A",
         "panel": "#111827",
-        "primary": "#22d3ee",
-        "secondary": "#a78bfa",
-        "text": "#e5e7eb",
-        "muted": "#94a3b8",
-        "border": "#1f2937",
+        "center": "#111827",
+        "card_alt": "#1F2937",
+        "sidebar_bg": "#0B1120",
+        "hover_bg": "#164E63",
+        "primary": "#22D3EE",
+        "secondary": "#A78BFA",
+        "text": "#E5E7EB",
+        "secondary_text": "#CBD5E1",
+        "muted": "#94A3B8",
+        "disabled": "#64748B",
+        "border": "#1F2937",
+        "card_border": "#334155",
+        "divider": "#334155",
+        "input_bg": "#0F172A",
+        "input_border": "#334155",
+        "green": "#2EE67B",
+        "success": "#22C55E",
+        "purple": "#A78BFA",
+        "orange": "#FFB020",
+        "red": "#F87171",
+        "sidebar_active": "#164E63",
+        "nav_hover": "#1E293B",
+        "log_bg": "#0B1020",
+        "log_info": "#172554",
+        "log_success": "#064E3B",
+        "log_warning": "#78350F",
+        "log_error": "#7F1D1D",
+        "table_alt": "#111827",
+        "version_bg": "#172554",
     },
 }
 
